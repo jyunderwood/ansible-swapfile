@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: Jonathan Underwood
+  company: jyunderwood.com
+  description: "Creates a swapfile on systems that don't have one."
+  license: MIT
+  min_ansible_version: 1.6
+
+  categories:
+    - system
+
+dependencies: []

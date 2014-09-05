@@ -1,0 +1,3 @@
+---
+swapfile_size: "256k"
+swapfile_swappiness: "1"

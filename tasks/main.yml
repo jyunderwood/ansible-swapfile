@@ -1,0 +1,42 @@
+---
+- name: "test for swap partition"
+  shell: 'sudo swapon -s | grep -E "^/"'
+  register: swapfile
+  ignore_errors: yes
+
+- name: "create swapfile"
+  when: swapfile|failed
+  shell: "sudo dd if=/dev/zero of=/swapfile bs=1024 count={{ swapfile_size }}"
+
+- name: "set swapfile permissions"
+  when: swapfile|failed
+  file: path=/swapfile
+        owner=root
+        group=root
+        mode=0600
+
+- name: "prepare swapfile"
+  when: swapfile|failed
+  shell: "sudo mkswap /swapfile"
+
+- name: "enable swap"
+  when: swapfile|failed
+  shell: "sudo swapon /swapfile"
+
+- name: "add swapfile"
+  when: swapfile|failed
+  lineinfile: dest=/etc/fstab
+              regexp="^/swapfile"
+              state=present
+              line="/swapfile       none    swap    sw      0       0"
+
+- name: "set swappiness (temporarily)"
+  when: swapfile|failed
+  shell: "echo {{ swapfile_swappiness }} | sudo tee /proc/sys/vm/swappiness"
+
+- name: "set swappiness (permanent)"
+  when: swapfile|failed
+  lineinfile: dest=/etc/sysctl.conf
+              regexp="^vm.swappiness"
+              state=present
+              line="vm.swappiness = {{ swapfile_swappiness }}"
