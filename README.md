@@ -16,9 +16,15 @@ Requires `sudo` or root access. Includes it's own conditional checking, just inc
 
 ## Variables
 
-`swapfile_size` defaults to "256k" (note this will create a swapfile with a size of  256MB via `dd` due to the `bs` flag being "1024").
+`swapfile_location` defaults to "/swapfile". If you want to have it created somewhere else, change this variable.
 
-`swapfile_swappiness` defaults to "1" so the system will swap only to avoid an out of memory condition (kernel 3.5+). If you run a kernel older than 3.5, use "0" for the same behavior. The kernel default value is "60". Setting the value higher results in more aggressive swapping.
+`swapfile_size` defaults to "256MB". Can be in KB, MB, or GB.
+
+`swapfile_swappiness` defaults to "1" so the system will swap only to avoid an out-of-memory condition (kernel 3.5+). If you run a kernel older than 3.5, use "0" for the same behavior. The kernel default value is "60". Setting the value higher results in more aggressive swapping.
+
+`swapfile_vfs_cache_pressure` defaults to "50" to reduce disk IO. The system default is "100". Decreasing this causes the kernel to prefer to retain dentry and inode caches. When set to 0, the kernel will never reclaim dentries and inodes due to memory pressure and this can easily lead to out-of-memory conditions. Increasing beyond "100" causes the kernel to prefer to reclaim dentries and inodes.
+
+More information about `swappiness` and `vfs_cache_pressure` can be found at [kernel.org](https://www.kernel.org/doc/Documentation/sysctl/vm.txt).
 
 ## License
 

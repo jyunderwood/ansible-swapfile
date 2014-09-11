@@ -4,39 +4,41 @@
   register: swapfile
   ignore_errors: yes
 
-- name: "create swapfile"
+- name: "write swapfile"
   when: swapfile|failed
-  shell: "sudo dd if=/dev/zero of=/swapfile bs=1024 count={{ swapfile_size }}"
+  command: fallocate -l {{ swapfile_size }} {{ swapfile_location }} creates={{ swapfile_location }}
+  register: write_swapfile
 
 - name: "set swapfile permissions"
-  when: swapfile|failed
-  file: path=/swapfile
+  when: swapfile|failed and write_swapfile.changed
+  file: path={{ swapfile_location }}
         owner=root
         group=root
         mode=0600
 
 - name: "prepare swapfile"
-  when: swapfile|failed
-  shell: "sudo mkswap /swapfile"
+  when: swapfile|failed and write_swapfile.changed
+  command: "mkswap {{ swapfile_location }}"
 
 - name: "enable swap"
   when: swapfile|failed
-  shell: "sudo swapon /swapfile"
+  command: "swapon {{ swapfile_location }}"
 
-- name: "add swapfile"
+- name: "add swapfile mount point"
   when: swapfile|failed
   lineinfile: dest=/etc/fstab
-              regexp="^/swapfile"
+              regexp="^{{ swapfile_location }}"
               state=present
-              line="/swapfile       none    swap    sw      0       0"
+              line="{{ swapfile_location }}       none    swap    sw      0       0"
 
-- name: "set swappiness (temporarily)"
+- name: "set swappiness"
   when: swapfile|failed
-  shell: "echo {{ swapfile_swappiness }} | sudo tee /proc/sys/vm/swappiness"
+  sysctl: name=vm.swappiness
+          value={{ swapfile_swappiness }}
+          state=present
 
-- name: "set swappiness (permanent)"
+- name: "set vfs cache pressure"
   when: swapfile|failed
-  lineinfile: dest=/etc/sysctl.conf
-              regexp="^vm.swappiness"
-              state=present
-              line="vm.swappiness = {{ swapfile_swappiness }}"
+  sysctl: name=vm.vfs_cache_pressure
+          value={{ swapfile_vfs_cache_pressure }}
+          state=present

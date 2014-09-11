@@ -1,3 +1,5 @@
 ---
-swapfile_size: "256k"
+swapfile_location: "/swapfile"
+swapfile_size: "256MB"
 swapfile_swappiness: "1"
+swapfile_vfs_cache_pressure: "50"
